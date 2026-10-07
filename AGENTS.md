@@ -84,6 +84,8 @@
 5. 提交到本仓库，项目那边改回调用通用版。
 
 外部贡献者只能通过 Pull Request 提交，同样照这个流程走：PR 里只能有通用改进，不能带任何项目数据。
+每个 PR 都会自动跑 GitHub Actions（`.github/workflows/check.yml`）：公开自查的内置规则、坑索引检查、全部离线测试，Ubuntu 和 Windows 各一遍。
+CI 里没有本地禁词表，所以合并前维护者还要在本地带禁词表跑一次 `python -X utf8 tools/check_public.py`。
 
 ## 目录
 
@@ -114,6 +116,7 @@
    - `python -X utf8 -m unittest discover -s tools -p "test_*.py"`
    - `python -X utf8 -m unittest discover -s tools/audit -p "test_*.py"`
    - 这两条不需要 `project.json`，也不连 EDA。
+   - 推到 main 后，到 GitHub 的 Actions 页看 check 两个任务（Ubuntu、Windows）都是绿的。
 2. 模块导入零副作用：在 `tools/` 下跑 `python -c "import v2_rows, v2_refreeze, v2_notes_dump, …"` 必须**零输出**。上面的离线测试里，`tools/test_import_clean.py` 已经自动查这一条。
 3. `python -X utf8 tools/check_public.py` 零命中。
 4. 维护者另在真实板子上回归（先确认用户不在 GUI）：

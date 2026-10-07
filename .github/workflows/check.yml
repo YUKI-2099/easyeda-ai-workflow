@@ -1,0 +1,43 @@
+# 每次推送到 main、每个 Pull Request 都跑：公开自查 + 坑索引是否最新 + 全部离线测试。
+# 不连 EDA、不联网（测试里的桥接都是假的）。本地禁词表不进仓库，所以 CI 里只跑 check_public 的内置规则。
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 公开自查（内置规则）
+        run: python -X utf8 tools/check_public.py
+
+      - name: 坑索引是最新的
+        run: python -X utf8 tools/manual_index.py --check
+
+      - name: 离线测试 tools/
+        run: python -X utf8 -m unittest discover -s tools -p "test_*.py"
+
+      - name: 离线测试 tools/audit/
+        run: python -X utf8 -m unittest discover -s tools/audit -p "test_*.py"
