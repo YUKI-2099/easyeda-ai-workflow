@@ -106,7 +106,7 @@ python -X utf8 -m unittest discover -s tools/audit -p "test_*.py"
   - 它查本机路径、IP、邮箱、密钥、板子专属 id。
   - 项目名、客户名这类禁词写在仓库根目录的 `.public-denylist.txt`，这个文件不进仓库。
 - 设计数据不进本仓库：网表、`project.json`、审查抓取的数据、证据材料，都留在各自的项目目录里（`.gitignore` 已排除）。
-- Pull Request 只收通用改进：不带任何项目数据，附上用合成数据写的测试。
+- Pull Request 只收通用改进：不带任何项目数据，附上用合成数据写的测试。提 PR 时页面上有自查清单，照着勾一遍。维护者怎么审，见 `AGENTS.md`「审外部 Pull Request」。
 
 ## 许可证
 
