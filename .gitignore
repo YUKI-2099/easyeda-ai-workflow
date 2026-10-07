@@ -1,0 +1,40 @@
+# 设计数据与证据——属于各项目，不进工具仓库（这是公开仓库）
+*.enet.txt
+*.tel
+*.epro
+*.epro2
+*.dsn
+*.ses
+codex-live/
+netlist/
+project.json
+notes.py
+notes.json
+geom.json
+catalog.json
+baseline.json
+plan.json
+frozen-*.json
+route-run-*/
+ACTIVE.json
+BLOCKED.json
+# 本地禁词表（项目名、客户名，本身就不能公开）
+.public-denylist.txt
+# 各 AI 工具 / 编辑器的本地目录
+.workbuddy/
+.claude/
+.codex/
+.opencode/
+.cursor/
+.vscode/
+.idea/
+# 日志、临时、环境
+*.log
+__pycache__/
+*.pyc
+.venv/
+.env
+.eda-lock.json
+build/
+.DS_Store
+Thumbs.db

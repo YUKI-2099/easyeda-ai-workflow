@@ -1,0 +1,18 @@
+本仓库的文档采用「知识共享 署名 4.0 国际」许可协议（CC BY 4.0）授权。
+The documentation in this repository is licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+Copyright (c) 2026 YUKI-2099
+
+适用范围 / Scope
+  - docs/ 下的全部手册，以及仓库里所有 *.md 说明文档（README、AGENTS 等）。
+    All manuals under docs/ and every *.md document in this repository.
+  - 脚本和代码（tools/、templates/ 下的 .py / .js 等文件）不在此列，它们采用 MIT 许可，见 LICENSE。
+    Scripts and code (.py / .js files under tools/ and templates/) are licensed under the MIT License instead; see LICENSE.
+
+你可以自由地复制、分发、改编，包括商用，只需署名：注明作者 YUKI-2099 和本仓库链接，并说明是否做了修改。
+You may share and adapt the material for any purpose, including commercially, as long as you give appropriate credit
+(author YUKI-2099 and a link to this repository) and indicate if changes were made.
+
+协议说明（中文）：https://creativecommons.org/licenses/by/4.0/deed.zh-hans
+协议全文（中文）：https://creativecommons.org/licenses/by/4.0/legalcode.zh-hans
+Legal code (English): https://creativecommons.org/licenses/by/4.0/legalcode

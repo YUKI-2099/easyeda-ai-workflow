@@ -1,0 +1,38 @@
+{
+  "_说明": "拷到你的项目根目录改名为 project.json（本仓库 .gitignore 排除它，因为它是板子的私有事实）。脚本按 --project / 环境变量 EDA_PROJECT / 向上找三种方式定位它。字段含义见 tools/project.py 头部；audit 段见 tools/audit/README.md。下面的值都是占位，照你的板子改。",
+  "name": "某板 V1",
+  "project_uuid": "在 EDA 里 getCurrentProjectInfo() 取到的工程 uuid（32 位）；填了脚本会断言当前工程就是它",
+  "schematic_uuid": "可选，原理图 uuid",
+  "bridge": "http://127.0.0.1:49620",
+  "pages": [
+    ["p1 电源", "16位页uuid"],
+    ["p2 主控", "16位页uuid"]
+  ],
+  "netlist_dir": "netlist",
+  "freeze_glob": "FREEZE-*.enet.txt",
+  "freeze_format": "FREEZE-{tag}.enet.txt",
+  "power_nets": ["VBUS", "SYS", "+3V3", "+5V", "VBAT"],
+  "nonelectrical_refs": [],
+  "audit_dir": "codex-live",
+  "audit": {
+    "_说明": "可选：tools/audit 审查脚本的板级参数；不用这些审查脚本就整段删掉。increment.expect 是每轮审查的预期，也可以每轮另写一个 JSON 用 --expect 传。",
+    "ground_net": "GND",
+    "distances": {
+      "pins": ["U1-3", "U2-1"],
+      "claims": "review/执行方证据.md"
+    },
+    "renamed_catalog_keys": {"U1": {"器件上的旧属性名": "库里现在的属性名"}},
+    "increment": {
+      "non_bypass_nets": ["NET_EN"],
+      "non_bypass_refs": ["C1"],
+      "expect": {
+        "ref_delta": 3,
+        "net_delta": 1,
+        "bypass_caps": 12,
+        "non_bypass_caps": 2,
+        "nets": {"NET_A": ["R1-1", "U1-6"]},
+        "pins": {"U1": {"8": "NET_B"}}
+      }
+    }
+  }
+}
