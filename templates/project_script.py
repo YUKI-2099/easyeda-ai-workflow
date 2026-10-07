@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-"""项目脚本样板：拷进你自己的项目仓库改，例如 <项目>/eda/check_project_json.py。不要提交回 eda-workflow。
+"""项目脚本样板：拷进你自己的项目仓库改，例如 <项目>/eda/check_project_json.py。不要提交回工具仓库。
 
-eda-workflow 和项目仓库怎么分工（详见 eda-workflow 的 AGENTS.md「工具仓库和项目仓库的分工」）：
-  - eda-workflow 只放通用工具和样板，不含任何项目数据，可以公开；
+工具仓库（easyeda-ai-workflow，本地目录名随意，下面简称"工具仓库"）和项目仓库怎么分工（详见工具仓库 AGENTS.md「工具仓库和项目仓库的分工」）：
+  - 工具仓库只放通用工具和样板，不含任何项目数据，可以公开；
   - 项目专用的东西（页 uuid、位号、网名、坐标、改图规则）只写在你的项目仓库里：project.json，或者照这个样板写的脚本；
-  - 项目脚本 import eda-workflow 的 tools/（bridge、project、v2_rows…），**不要把那些脚本拷过来改**——
-    拷了就分叉，上游修的坑你拿不到；通用工具缺功能，就到 eda-workflow 里加参数或 project.json 键，再回来调用。
+  - 项目脚本 import 工具仓库的 tools/（bridge、project、v2_rows…），**不要把那些脚本拷过来改**——
+    拷了就分叉，上游修的坑你拿不到；通用工具缺功能，就到工具仓库里加参数或 project.json 键，再回来调用。
 
 本样板只读：核对 project.json 和 EDA 里当前打开的工程对不对得上——工程 uuid 是不是同一个、各页 uuid 还在不在。
 它不切页、不写任何东西。改成你自己的脚本时，凡是会 openDocument（切页）的，开头加 bridge.remember_doc()（坑 #51）。
 
 用法（在项目目录里跑；project.py 会从当前目录向上找 project.json）：
     python -X utf8 eda/check_project_json.py [--project <项目目录>]
-找 eda-workflow 的顺序：环境变量 EDA_WORKFLOW > 从本文件所在目录逐级向上找名为 eda-workflow 的目录。
+找工具仓库的顺序：环境变量 EDA_WORKFLOW > 从本文件所在目录逐级向上，找名为 easyeda-ai-workflow 或 eda-workflow 的目录。
 """
 import os
 import sys
@@ -22,9 +22,12 @@ import sys
 ONLY_PAGES = []
 # ============================================
 
+# 工具仓库的目录名：GitHub 上叫 easyeda-ai-workflow，作者本机叫 eda-workflow；你改了名就加进来，或者设 EDA_WORKFLOW
+REPO_DIR_NAMES = ('easyeda-ai-workflow', 'eda-workflow')
+
 
 def find_eda_workflow(start=None):
-    """返回 eda-workflow 仓库根目录；找不到就退出并说明怎么设。"""
+    """返回工具仓库根目录；找不到就退出并说明怎么设。"""
     env = os.environ.get('EDA_WORKFLOW')
     if env:
         if os.path.isfile(os.path.join(env, 'tools', 'bridge.py')):
@@ -32,12 +35,13 @@ def find_eda_workflow(start=None):
         sys.exit('环境变量 EDA_WORKFLOW 指的目录里没有 tools/bridge.py：%s' % env)
     d = os.path.abspath(start or os.path.dirname(os.path.abspath(__file__)))
     while True:
-        cand = os.path.join(d, 'eda-workflow')
-        if os.path.isfile(os.path.join(cand, 'tools', 'bridge.py')):
-            return cand
+        for name in REPO_DIR_NAMES:
+            cand = os.path.join(d, name)
+            if os.path.isfile(os.path.join(cand, 'tools', 'bridge.py')):
+                return cand
         parent = os.path.dirname(d)
         if parent == d:
-            sys.exit('找不到 eda-workflow：设环境变量 EDA_WORKFLOW=<eda-workflow 目录>')
+            sys.exit('找不到工具仓库：设环境变量 EDA_WORKFLOW=<工具仓库目录>')
         d = parent
 
 

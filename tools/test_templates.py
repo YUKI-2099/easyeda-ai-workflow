@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""templates/ 下样板的回归：能导入、导入无副作用、找 eda-workflow 和比对逻辑对。不连桥接、不联网。
+"""templates/ 下样板的回归：能导入、导入无副作用、找工具仓库和比对逻辑对。不连桥接、不联网。
 
     python -X utf8 -m unittest tools/test_templates.py
 """
@@ -45,13 +45,15 @@ class ProjectScriptTemplate(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 self.mod.find_eda_workflow()
             del os.environ['EDA_WORKFLOW']
-            tools = os.path.join(tmp, 'eda-workflow', 'tools')
-            os.makedirs(tools)
-            open(os.path.join(tools, 'bridge.py'), 'w').close()
-            deep = os.path.join(tmp, 'my-board', 'eda')
-            os.makedirs(deep)
-            self.assertEqual(os.path.normcase(self.mod.find_eda_workflow(deep)),
-                             os.path.normcase(os.path.join(tmp, 'eda-workflow')))
+            for name in ('easyeda-ai-workflow', 'eda-workflow'):     # GitHub 上的名字和作者本机的目录名都要认
+                with tempfile.TemporaryDirectory() as ws:
+                    tools = os.path.join(ws, name, 'tools')
+                    os.makedirs(tools)
+                    open(os.path.join(tools, 'bridge.py'), 'w').close()
+                    deep = os.path.join(ws, 'my-board', 'eda')
+                    os.makedirs(deep)
+                    self.assertEqual(os.path.normcase(self.mod.find_eda_workflow(deep)),
+                                     os.path.normcase(os.path.join(ws, name)))
 
     def test_compare(self):
         cfg = {'project_uuid': 'p-1', 'pages': [('p1 电源', 'u1'), ('p2 主控', 'u2')]}

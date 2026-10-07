@@ -1,4 +1,4 @@
-# eda-workflow · AI 作业入口（Claude Code / Codex / OpenCode 共用）
+# easyeda-ai-workflow · AI 作业入口（Claude Code / Codex / OpenCode 共用）
 
 本仓库 = 嘉立创EDA 专业版（官方 `easyeda-api` skill + Run API Gateway 扩展）的 **手册 + 脚本工具链**。
 设计数据不在这里，在各项目目录，由该目录的 `project.json` 描述。
