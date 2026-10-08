@@ -616,6 +616,7 @@ strict/userInterface 各种组合都一样(`sch_Drc` 限定,PCB 不同见 ㊾)�
 > 摘要：Bridge 起不来先分清四个检查点：Node 依赖、服务已起、扩展已连、文档作用域；扩展可以在 API Gateway 菜单里重新连接。
 > 命中：
 > - 2026-09-12 实证（原文）
+> - 2026-10-08 会话重开后 Bridge 没了：重起 Bridge 等了约 1 分钟扩展仍没连上，请用户点 API Gateway → 重新连接后立刻连上
 
 现象:十个候选端口都探不到服务,本地也没有监听记录。经用户同意起 Bridge:Codex 那份 skill 副本一启动就报 `ERR_MODULE_NOT_FOUND`、解析不了 `ws` —— 那份副本没装 Node 依赖,**也没去给它装**;改用已装依赖的 Claude 那份 skill 副本的 `scripts/bridge-server.mjs`,只起一个 Bridge。服务就绪时 0 窗口,随后在 EDA 里点现有的 **API Gateway → 重新连接**,提示已连上端口,独立 `/health` 为 `edaConnected:true`、1 窗口,再核对目标 PCB 的文档作用域正确。**缺 Node 依赖、服务已启动、扩展已连接、文档作用域正确是四个不同检查点**;没有公开的重连 API 不代表原生菜单不行,不要默认要求先停用 / 启用扩展或重启 EDA。
 每次起 Bridge 都照旧先查单例,再按项目规矩看要不要先征得用户同意;用户的一次同意只管那一次(工具手册 §0.2、§0.5);不固定 PID / 端口 / windowId;经验记在本手册,不写进厂家 skill 目录。菜单重连这条路要实际点过、看到连上的提示才算数,单看 `/health` 证明不了点击路径。
