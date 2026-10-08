@@ -3,7 +3,8 @@
 
     python -X utf8 tools/check_public.py              # 扫工作区：已跟踪 + 未忽略的新文件，有命中就退出码 1
     python -X utf8 tools/check_public.py 文件 …        # 只扫指定文件
-    python -X utf8 tools/check_public.py --history    # 扫全部 git 历史：所有提交里的每个文件版本，加作者 / 提交者邮箱和提交信息
+    python -X utf8 tools/check_public.py --history    # 扫会公开的 git 历史：所有提交里的每个文件版本，加作者 / 提交者邮箱和提交信息
+    python -X utf8 tools/check_public.py --history --all-refs   # 连别的远程（如只读存档的旧仓库）和 stash 一起扫
     python -X utf8 tools/check_public.py --list-rules # 看有哪些规则
 
 注意：默认只扫工作区里文件现在的内容。仓库要改成公开之前，必须再跑一次 --history——
@@ -224,10 +225,16 @@ def scan_files(files, deny):
     return hits, scanned
 
 
-def history_hits(deny):
-    """扫全部历史：每个提交里每个文件的每个版本（去重后的 blob），加每个提交的作者 / 提交者邮箱和提交信息。"""
+PUBLISHED_REFS = ['HEAD', '--branches', '--tags', '--remotes=origin']
+
+
+def history_hits(deny, all_refs=False):
+    """扫历史：每个提交里每个文件的每个版本（去重后的 blob），加每个提交的作者 / 提交者邮箱和提交信息。
+    默认只扫会公开的那些提交：HEAD、本地分支、标签、origin 的远程分支。
+    别的远程（比如留作只读存档的旧私有仓库）和 stash 不会被推出去，不扫；要连它们一起扫就给 all_refs=True。"""
     hits = []
-    objs = _git(['rev-list', '--objects', '--all']).decode('utf-8', 'replace').splitlines()
+    refs = ['--all'] if all_refs else PUBLISHED_REFS
+    objs = _git(['rev-list', '--objects'] + refs).decode('utf-8', 'replace').splitlines()
     pairs = [l.split(' ', 1) for l in objs if ' ' in l]
     if pairs:
         kinds = _git(['cat-file', '--batch-check=%(objectname) %(objecttype)'],
@@ -252,7 +259,7 @@ def history_hits(deny):
                 continue
             for n, name, s in scan_text(text, deny, builtin=not is_self(p)):
                 hits.append(('历史 %s @%s' % (p, oid.decode()[:8]), n, name, s))
-    log = _git(['log', '--all', '--format=%H%x00%ae%x00%ce%x00%B%x1e']).decode('utf-8', 'replace')
+    log = _git(['log'] + refs + ['--format=%H%x00%ae%x00%ce%x00%B%x1e']).decode('utf-8', 'replace')
     for rec in log.split('\x1e'):
         rec = rec.strip('\n')
         if not rec:
@@ -289,7 +296,7 @@ def main(argv):
         if deny is None:
             print('（没有本地禁词表 %s：只跑内置规则。项目名、客户名这类词请写进这个文件，它不进仓库）' % deny_path)
         if '--history' in argv:
-            hits = history_hits(deny)
+            hits = history_hits(deny, all_refs='--all-refs' in argv)
             report(hits, limit=200)
             if hits:
                 print('\n历史里共 %d 处。只改当前文件去不掉它们：改写历史，或者用不带历史的新仓库发布。' % len(hits))

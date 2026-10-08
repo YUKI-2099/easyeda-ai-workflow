@@ -225,6 +225,17 @@ class History(unittest.TestCase):
             cp.main(['--history'])
         self.assertIn('非系统盘绝对路径', out.getvalue())
 
+    def test_other_remotes_are_skipped_unless_all_refs(self):
+        # 本机克隆里还挂着只读存档的旧私有仓库时（remote 叫 private），默认不该把它的旧历史算进来
+        self.commit('a.md', '通用说法\n', '初始')
+        self.git('checkout', '-q', '-b', 'tmp')
+        self.commit('b.md', '路径 ' + DATA_DRIVE + '\n', '存档里的旧提交')
+        self.git('update-ref', 'refs/remotes/private/main', 'tmp')
+        self.git('checkout', '-q', '-')
+        self.git('branch', '-q', '-D', 'tmp')
+        self.assertEqual(quiet(cp.main, ['--history']), 0)
+        self.assertEqual(quiet(cp.main, ['--history', '--all-refs']), 1)
+
     def test_commit_metadata(self):
         self.commit('a.md', '通用说法\n', '提到 ' + DATA_DRIVE, email=EMAIL)
         hits = cp.history_hits(None)
