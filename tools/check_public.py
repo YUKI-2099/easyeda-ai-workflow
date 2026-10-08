@@ -24,6 +24,7 @@
 
 本地禁词表（不进仓库）：项目名、客户名、主机名、私有网名这类"说出来就是泄密"的词，本身也不能公开，
 所以写在仓库根目录的 `.public-denylist.txt`（已在 .gitignore 里），或用环境变量 EDA_PUBLIC_DENYLIST 指一个文件。
+在 git worktree 里没有这份文件时，自动用主工作目录根目录下的那份。
 每行一个正则（不分大小写；要区分大小写写成 (?-i:…)）；# 开头是注释。没有禁词表时只跑内置规则，并提示一句。
 
 确实要保留的行，在同一行写上 `check_public: allow`（Markdown 里可以写成 HTML 注释）：只豁免内置规则，禁词照样报。
@@ -118,6 +119,17 @@ def hex_flagged(s):
     return bool(re.search(r'\d', s)) and bool(re.search(r'[a-f]', s))   # 纯数字或纯字母不是 id
 
 
+def main_worktree_root():
+    """当前目录是 git worktree 时，返回主工作目录的根；不是 git 仓库、或本身就是主工作目录时返回 None。"""
+    try:
+        common = subprocess.run(['git', '-C', ROOT, 'rev-parse', '--path-format=absolute', '--git-common-dir'],
+                                capture_output=True, check=True).stdout.decode('utf-8').strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    root = os.path.dirname(os.path.normpath(common))
+    return None if os.path.normcase(root) == os.path.normcase(os.path.normpath(ROOT)) else root
+
+
 def load_denylist(path=None):
     """返回 (正则列表或 None, 路径, 警告列表)。表写坏了抛 ConfigError。"""
     env = os.environ.get('EDA_PUBLIC_DENYLIST')
@@ -125,7 +137,12 @@ def load_denylist(path=None):
         path = env
         if not os.path.isfile(path):                      # 显式指了却找不到：多半是拼错了，不能静默放过
             raise ConfigError('环境变量 EDA_PUBLIC_DENYLIST 指向的禁词表不存在：%s' % path)
-    path = path or os.path.join(ROOT, DENYLIST_NAME)
+    if path is None:
+        path = os.path.join(ROOT, DENYLIST_NAME)
+        if not os.path.isfile(path):
+            main_tree = main_worktree_root()               # 在 git worktree 里：用主工作目录那份
+            if main_tree and os.path.isfile(os.path.join(main_tree, DENYLIST_NAME)):
+                path = os.path.join(main_tree, DENYLIST_NAME)
     if not os.path.isfile(path):
         return None, path, []
     try:

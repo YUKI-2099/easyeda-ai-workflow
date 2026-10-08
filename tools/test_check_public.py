@@ -236,6 +236,22 @@ class History(unittest.TestCase):
         self.assertEqual(quiet(cp.main, ['--history']), 0)
         self.assertEqual(quiet(cp.main, ['--history', '--all-refs']), 1)
 
+    def test_worktree_falls_back_to_main_tree_denylist(self):
+        # 另开 git worktree 干活时，副本里没有禁词表：要用主工作目录那份，不能退化成只跑内置规则
+        self.commit('a.md', '通用说法\n', '初始')
+        with open(os.path.join(self.repo, cp.DENYLIST_NAME), 'w', encoding='utf-8') as f:
+            f.write('秘密工程\n')
+        with tempfile.TemporaryDirectory() as other:
+            wt = os.path.join(other, 'wt')
+            self.git('worktree', 'add', '-q', '-b', 'wt-branch', wt)
+            cp.ROOT = wt
+            deny, path, _ = cp.load_denylist()
+            self.assertIsNotNone(deny)
+            self.assertEqual(os.path.normcase(os.path.normpath(path)),
+                             os.path.normcase(os.path.normpath(os.path.join(self.repo, cp.DENYLIST_NAME))))
+            cp.ROOT = self.repo
+            self.git('worktree', 'remove', '--force', wt)
+
     def test_message_mode_skips_git_comment_lines(self):
         msg = os.path.join(self.repo, 'MSG')
         with open(msg, 'w', encoding='utf-8') as f:
