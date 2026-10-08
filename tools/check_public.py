@@ -6,6 +6,11 @@
     python -X utf8 tools/check_public.py --history    # 扫会公开的 git 历史：所有提交里的每个文件版本，加作者 / 提交者邮箱和提交信息
     python -X utf8 tools/check_public.py --history --all-refs   # 连别的远程（如只读存档的旧仓库）和 stash 一起扫
     python -X utf8 tools/check_public.py --list-rules # 看有哪些规则
+    python -X utf8 tools/check_public.py --staged     # 只扫暂存区里这次要提交的文件（pre-commit 钩子用）
+    python -X utf8 tools/check_public.py --message 文件 # 扫一份提交信息（commit-msg 钩子用；# 开头的注释行不算）
+
+本地钩子：`python -X utf8 tools/install_hooks.py` 给这份克隆装上 pre-commit / commit-msg 两个钩子，
+每次提交自动跑上面两条，有命中就拦下这次提交。钩子不随 clone 走，每台机器、每份克隆装一次。
 
 注意：默认只扫工作区里文件现在的内容。仓库要改成公开之前，必须再跑一次 --history——
 历史版本和提交信息会跟着仓库一起公开，只改当前文件挡不住。
@@ -273,6 +278,33 @@ def history_hits(deny, all_refs=False):
     return hits
 
 
+def staged_hits(deny):
+    """只扫暂存区里这次要提交的文件（新增、修改、改名后的版本），读的是暂存区里的内容，不是工作区。
+    返回 (命中列表, 扫了几个文件)。"""
+    out = _git(['diff', '--cached', '--name-only', '--diff-filter=ACMR', '-z']).decode('utf-8')
+    hits, scanned = [], 0
+    for rel in (p for p in out.split('\0') if p):
+        if os.path.splitext(rel)[1].lower() not in TEXT_EXT:
+            continue
+        text = decode(_git(['show', ':' + rel]))
+        if text is None:
+            continue
+        scanned += 1
+        for n, name, s in scan_text(text, deny, builtin=not is_self(rel)):
+            hits.append(('暂存区 %s' % rel, n, name, s))
+    return hits, scanned
+
+
+def message_hits(path, deny):
+    """扫一份提交信息。git 编辑器模板里 # 开头的注释行不会进提交，跳过。"""
+    if not os.path.isfile(path):
+        raise ConfigError('提交信息文件不存在：%s' % path)
+    with open(path, 'rb') as f:
+        text = decode(f.read()) or ''
+    kept = '\n'.join('' if l.startswith('#') else l for l in text.splitlines())
+    return [('提交信息', n, name, s) for n, name, s in scan_text(kept, deny)]
+
+
 def report(hits, limit=None):
     shown = hits if limit is None else hits[:limit]
     for where, n, name, s in shown:
@@ -302,6 +334,25 @@ def main(argv):
                 print('\n历史里共 %d 处。只改当前文件去不掉它们：改写历史，或者用不带历史的新仓库发布。' % len(hits))
                 return 1
             print('✅ 历史里没有发现不该公开的内容%s' % ('' if deny is None else '（含本地禁词表 %d 条）' % len(deny)))
+            return 0
+        if '--message' in argv:
+            i = argv.index('--message')
+            if i + 1 >= len(argv):
+                raise ConfigError('--message 后面要跟提交信息文件的路径')
+            hits = message_hits(argv[i + 1], deny)
+            report(hits)
+            if hits:
+                print('\n提交信息里有 %d 处不该公开的内容，这次提交已拦下：改写提交信息再提交。' % len(hits))
+                return 1
+            return 0
+        if '--staged' in argv:
+            hits, scanned = staged_hits(deny)
+            report(hits)
+            if hits:
+                print('\n暂存区里共 %d 处，这次提交已拦下：改掉再 git add，'
+                      '或确属公开信息就在那一行写 `%s`（只豁免内置规则）。' % (len(hits), ALLOW_MARK))
+                return 1
+            print('✅ check_public：暂存区 %d 个文本文件干净%s' % (scanned, '' if deny is None else '（含本地禁词表 %d 条）' % len(deny)))
             return 0
         named = [a for a in argv if not a.startswith('--')]
         missing = [a for a in named if not os.path.isfile(a)]

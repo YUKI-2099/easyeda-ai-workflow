@@ -236,6 +236,28 @@ class History(unittest.TestCase):
         self.assertEqual(quiet(cp.main, ['--history']), 0)
         self.assertEqual(quiet(cp.main, ['--history', '--all-refs']), 1)
 
+    def test_message_mode_skips_git_comment_lines(self):
+        msg = os.path.join(self.repo, 'MSG')
+        with open(msg, 'w', encoding='utf-8') as f:
+            f.write('修一处说明\n\n# 请输入提交信息\n# 路径 ' + DATA_DRIVE + ' 在注释里不算\n')
+        self.assertEqual(quiet(cp.main, ['--message', msg]), 0)
+        with open(msg, 'w', encoding='utf-8') as f:
+            f.write('修一处说明，见 ' + DATA_DRIVE + '\n')
+        self.assertEqual(quiet(cp.main, ['--message', msg]), 1)
+        self.assertEqual(quiet(cp.main, ['--message']), 2)
+
+    def test_staged_mode_reads_the_index_not_the_worktree(self):
+        self.commit('a.md', '通用说法\n', '初始')
+        with open(os.path.join(self.repo, 'b.md'), 'w', encoding='utf-8') as f:
+            f.write('路径 ' + DATA_DRIVE + '\n')
+        self.git('add', 'b.md')
+        self.assertEqual(quiet(cp.main, ['--staged']), 1)
+        with open(os.path.join(self.repo, 'b.md'), 'w', encoding='utf-8') as f:
+            f.write('已改成 <项目目录>\n')                                  # 只改工作区、没 add：暂存区里还是旧的
+        self.assertEqual(quiet(cp.main, ['--staged']), 1)
+        self.git('add', 'b.md')
+        self.assertEqual(quiet(cp.main, ['--staged']), 0)
+
     def test_commit_metadata(self):
         self.commit('a.md', '通用说法\n', '提到 ' + DATA_DRIVE, email=EMAIL)
         hits = cp.history_hits(None)

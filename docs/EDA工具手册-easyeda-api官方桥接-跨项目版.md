@@ -694,7 +694,7 @@ cat 消息.txt | codex exec -m "$MODEL" -s workspace-write --skip-git-repo-check
 - `tools/audit/`:板级参数改从 `project.json` 的 `audit` 段或命令行读(见 `tools/audit/README.md`)。`codex_distances` 必须给要查的脚,`codex_increment_check` 不再带写死的断言。
 - `patch_easyeda_skill.py`:默认只预览,`--apply` 才写,写前备份。
 - 新增:
-  - `tools/check_public.py`:公开自查,`--history` 扫全部历史;
+  - `tools/check_public.py`:公开自查,`--history` 扫全部历史;2026-10-08 加 `--staged` / `--message` 和 `tools/install_hooks.py`(本机克隆装上提交前自动自查的钩子);
   - `templates/project_script.py`:项目脚本样板;
   - 「工具仓库和项目仓库的分工」规则:见 §2.14 开头、§7.3 和 `AGENTS.md`。
 - 公开版去掉读立创商城商品页的脚本(商城不欢迎自动抓取),坑档案 #58 只留人工看页面时的注意事项。

@@ -32,6 +32,7 @@
 | `tools/audit/` | 审查方自己拉数据、自己解析的参考实现，以及快照差异工具 `pcb_route_diff.py` |
 | `tools/manual_index.py` | 从《坑档案》生成工具手册 §1 和档案开头的接口索引；`--check` 只检查 |
 | `tools/check_public.py` | 公开前自查：本机路径、IP、邮箱、密钥、板子专属 id，以及本地禁词表 |
+| `tools/install_hooks.py` | 给你的克隆装本地 git 钩子：每次提交自动跑上面的自查，有命中就拦下 |
 | `tools/patch_easyeda_skill.py` | 可选：在官方 skill 的 `SKILL.md` 里加一段"先读本手册"的入口提示（默认只预览） |
 | `templates/project_script.py` | 项目脚本样板：拷进**你自己的项目仓库**再改（只读核对 `project.json` 和当前工程对不对得上） |
 | `project.example.json` | 项目配置模板 |
@@ -103,6 +104,7 @@ python -X utf8 -m unittest discover -s tools/audit -p "test_*.py"
 
 - 新踩的坑当天写进《坑档案》（带日期、EDA 版本和实证），然后跑 `python -X utf8 tools/manual_index.py` 重新生成 §1。§1 的生成段不要手改，`tools/test_manual_index.py` 会拦。
 - 这是公开仓库，提交前跑 `python -X utf8 tools/check_public.py`，要零命中。
+  更省事的做法：跑一次 `python -X utf8 tools/install_hooks.py`，以后每次 `git commit` 都会自动查。
   - 它查本机路径、IP、邮箱、密钥、板子专属 id。
   - 项目名、客户名这类禁词写在仓库根目录的 `.public-denylist.txt`，这个文件不进仓库。
 - 设计数据不进本仓库：网表、`project.json`、审查抓取的数据、证据材料，都留在各自的项目目录里（`.gitignore` 已排除）。

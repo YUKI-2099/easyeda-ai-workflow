@@ -58,6 +58,10 @@
   - 它查本机路径、IP、邮箱、密钥、板子专属 id，再加本地禁词表 `.public-denylist.txt`。
   - 禁词表写项目名、客户名、主机名，**不进仓库**，换机器时自己建一份。
   - 确属公开信息的行，写 `check_public: allow` 豁免，并在提交信息里说明理由。
+- **维护者的每份克隆都装上本地钩子**：`python -X utf8 tools/install_hooks.py`。
+  - 装好以后，每次 `git commit` 都会自动带禁词表扫暂存区和提交信息，有命中就拦下这次提交。
+  - 被拦了就改内容，**不要用 `--no-verify` 绕过**。
+  - 钩子不随 clone 走，换机器、重新克隆都要再装一次，禁词表也要一起拷过去。
 - 提交信息同样会公开，也照上面这些规则写。
 
 ## 工具仓库和项目仓库的分工
@@ -121,7 +125,7 @@ PR 的代码只在临时副本里跑离线测试，不跑会连 EDA 桥接、联
   - `pcb_geom.py` / `pcb_route_batch.py`：PCB。
   - `safe_rename.py`。
   - `manual_index.py`：从坑档案生成工具手册 §1。
-  - `check_public.py`：公开自查。
+  - `check_public.py`：公开自查；`install_hooks.py`：给本机克隆装提交前自动自查的钩子。
   - `patch_easyeda_skill.py`。
 - `tools/audit/`：审查方自己拉数据的参考实现（`codex_*.py`），加快照差异工具 `pcb_route_diff.py`，以及回归测试。
 - `templates/`：拷进项目仓库再改的样板，现在有 `project_script.py`。

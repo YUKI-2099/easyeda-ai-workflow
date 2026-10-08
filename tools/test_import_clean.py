@@ -16,7 +16,7 @@ TOOLS = Path(__file__).resolve().parent
 MODULES = ('v2_rows', 'v2_refreeze', 'v2_notes_dump', 'v2_geom_audit', 'v2_add_parts', 'v2_swap_part',
            'v2_wire_pins', 'v2_route_pin', 'v2_strip_wire_nets', 'v2_free_spot', 'v2_add_note', 'v2_notes',
            'v2_notes_place', 'pcb_geom', 'project', 'bridge', 'safe_rename', 'pcb_route_batch',
-           'patch_easyeda_skill', 'manual_index', 'check_public')
+           'patch_easyeda_skill', 'manual_index', 'check_public', 'install_hooks')
 
 
 class ImportCleanTest(unittest.TestCase):
