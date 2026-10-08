@@ -1,6 +1,6 @@
 # easyeda-ai-workflow
 
-[![check](https://github.com/YUKI-2099/easyeda-ai-workflow/actions/workflows/check.yml/badge.svg)](https://github.com/YUKI-2099/easyeda-ai-workflow/actions/workflows/check.yml)
+[![check](https://github.com/YukiHalo/easyeda-ai-workflow/actions/workflows/check.yml/badge.svg)](https://github.com/YukiHalo/easyeda-ai-workflow/actions/workflows/check.yml)
 
 嘉立创EDA 专业版（EasyEDA Pro）的 **AI 作业手册 + 脚本工具链**。
 用来让 Claude Code、Codex 这类 AI 编码助手，通过官方 [`easyeda-api` skill](https://github.com/easyeda/easyeda-api-skill) 和 [Run API Gateway 扩展](https://ext.lceda.cn/item/oshwhub/run-api-gateway)，**安全、可复核地**读写原理图和 PCB。
