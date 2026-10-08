@@ -247,8 +247,8 @@ class History(unittest.TestCase):
             cp.ROOT = wt
             deny, path, _ = cp.load_denylist()
             self.assertIsNotNone(deny)
-            self.assertEqual(os.path.normcase(os.path.normpath(path)),
-                             os.path.normcase(os.path.normpath(os.path.join(self.repo, cp.DENYLIST_NAME))))
+            # 比"是不是同一个文件"，不比字符串：GitHub 的 Windows 机器上临时目录是 RUNNER~1 这种短路径名，git 给的是长路径
+            self.assertTrue(os.path.samefile(path, os.path.join(self.repo, cp.DENYLIST_NAME)), path)
             cp.ROOT = self.repo
             self.git('worktree', 'remove', '--force', wt)
 

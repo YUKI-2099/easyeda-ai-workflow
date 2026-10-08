@@ -127,7 +127,8 @@ def main_worktree_root():
     except (OSError, subprocess.CalledProcessError):
         return None
     root = os.path.dirname(os.path.normpath(common))
-    return None if os.path.normcase(root) == os.path.normcase(os.path.normpath(ROOT)) else root
+    same = lambda a, b: os.path.normcase(os.path.realpath(a)) == os.path.normcase(os.path.realpath(b))
+    return None if same(root, ROOT) else root            # realpath：Windows 上把 RUNNER~1 这类短路径名展开再比
 
 
 def load_denylist(path=None):
