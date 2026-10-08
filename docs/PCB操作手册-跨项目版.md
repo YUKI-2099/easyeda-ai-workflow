@@ -147,6 +147,7 @@ pcb_Primitive.getPrimitivesBBox([id]) 可读文字/组件包围框，已用于�
 - **2026-09-12 重连后返回类型实测**:前批为2项字符串列表,当前为单个字符串,逐字等于旧列表[1];旧[0]是同一工程里另一块参考板的网表。因此只能证明该板文本未变,**不能把单板子集冒充多板全集**。必须记录并按实际 `string`/`list[string]` 类型冻结比较:**严禁 `sorted(string)` 将正文按字符排序**;单字符串保留全文顺序,列表仅可按上条处理外层。类型变化先重新核对作用域、导出范围及原始成员,同步新基线,不可静默包成单元素列表继续旧集合验收。**与打开标签数量的因果关系未验证**。
 
 **铺铜、DRC、规则**
+- **差分对规则**(2026-10-08 实测):`pcb_Drc.getAllDifferentialPairs()` 列出 `{name, positiveNet, negativeNet}`,`deleteDifferentialPair(name)` 删除,保存重开后仍为空;删前把定义存下来,要恢复用 `createDifferentialPair(name, 正网, 负网)`。电流采样电阻两端的开尔文采样线这类本来就不等长的线,不该定义成差分对,否则 DRC 永远报长度差。
 - `pcb_PrimitivePour.create` 文档写 IPCB_Polygon,当前客户端传 `createPolygon` 失败、`createComplexPolygon` 成功。**create 仅边框,save 后仍 0 个 Poured**;`Shift+B`(getShortcutKeys 确认"重建所有铺铜")或实例方法 `await pour.rebuildCopperRegion()`(SDK 0.2.53 实测可用;随官方 skill 分发的接口文档未列)后才生成。
 - 🔴 **布线/过孔变更后必须重建铺铜再跑 DRC**:旧填充不避让新 via,会报铜皮对过孔 0mm"短路";重建后消失。**不能删正确线路迁就陈旧铜皮。**
 - `pcb_Drc.getCurrentRuleConfiguration()` 返回 `{config,name}` 包装;**`overwriteCurrentRuleConfiguration` 要传内层 `config`**,传包装返回 undefined 且读回原值。毫米会量化(0.6→0.5999988),比较容差 3e-6mm。
